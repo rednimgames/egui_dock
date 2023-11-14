@@ -42,6 +42,13 @@ pub trait TabViewer {
         true
     }
 
+    /// Returns `true` if the user of your app should be able to drag a given `_tab`.
+    ///
+    /// By default `true` is always returned.
+    fn draggable(&mut self, _tab: &mut Self::Tab) -> bool {
+        true
+    }
+
     /// This is called when the `_tab` gets closed by the user.
     ///
     /// Returns `true` if the tab should close immediately, otherwise `false`.

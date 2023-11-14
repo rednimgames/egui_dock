@@ -217,7 +217,7 @@ impl<'tree, Tab> DockArea<'tree, Tab> {
                 tabs_ui.output_mut(|o| o.cursor_icon = CursorIcon::Grabbing);
             }
 
-            let (is_active, label, tab_style, closeable) = {
+            let (is_active, label, tab_style, closeable, draggable) = {
                 let Node::Leaf { tabs, active, .. } =
                     &mut self.dock_state[surface_index][node_index]
                 else {
@@ -230,9 +230,10 @@ impl<'tree, Tab> DockArea<'tree, Tab> {
                     tab_viewer.title(&mut tabs[tab_index.0]),
                     tab_style.unwrap_or(style.tab.clone()),
                     tab_viewer.closeable(&mut tabs[tab_index.0]),
+                    tab_viewer.draggable(&mut tabs[tab_index.0]),
                 )
             };
-
+            let is_being_dragged = is_being_dragged && draggable;
             let show_close_button = self.show_close_buttons && closeable;
 
             let response = if is_being_dragged {
@@ -246,6 +247,7 @@ impl<'tree, Tab> DockArea<'tree, Tab> {
                             label,
                             is_active && Some((surface_index, node_index)) == focused,
                             is_active,
+                            draggable,
                             is_being_dragged,
                             preferred_width,
                             show_close_button,
@@ -281,6 +283,7 @@ impl<'tree, Tab> DockArea<'tree, Tab> {
                     label,
                     is_active && Some((surface_index, node_index)) == focused,
                     is_active,
+                    draggable,
                     is_being_dragged,
                     preferred_width,
                     show_close_button,
@@ -502,6 +505,7 @@ impl<'tree, Tab> DockArea<'tree, Tab> {
         label: WidgetText,
         focused: bool,
         active: bool,
+        draggable: bool,
         is_being_dragged: bool,
         prefered_width: Option<f32>,
         show_close_button: bool,
@@ -526,7 +530,7 @@ impl<'tree, Tab> DockArea<'tree, Tab> {
 
         let (rect, mut response) =
             ui.allocate_exact_size(vec2(tab_width, ui.available_height()), Sense::hover());
-        if !ui.memory(|mem| mem.is_anything_being_dragged()) && self.draggable_tabs {
+        if !ui.memory(|mem| mem.is_anything_being_dragged()) && self.draggable_tabs && draggable {
             response = response.on_hover_cursor(CursorIcon::PointingHand);
         }
 
